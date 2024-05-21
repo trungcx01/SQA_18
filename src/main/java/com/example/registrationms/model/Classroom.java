@@ -16,7 +16,8 @@ import java.util.List;
 @Builder
 @Data
 public class Classroom {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(nullable = false)
     private String name;

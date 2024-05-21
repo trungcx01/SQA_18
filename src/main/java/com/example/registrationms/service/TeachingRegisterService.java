@@ -4,10 +4,7 @@ import com.example.registrationms.dto.CourseDTO;
 import com.example.registrationms.dto.ScheduleDTO;
 import com.example.registrationms.dto.SubjectDTO;
 import com.example.registrationms.dto.TeachingRegisterRequest;
-import com.example.registrationms.exception.DuplicateRegisterException;
-import com.example.registrationms.exception.ShiftInputException;
-import com.example.registrationms.exception.WeekDayInputException;
-import com.example.registrationms.exception.WeekInputException;
+import com.example.registrationms.exception.*;
 import com.example.registrationms.model.Course;
 import com.example.registrationms.model.Schedule;
 import com.example.registrationms.model.WeekDay;
@@ -77,47 +74,55 @@ public class TeachingRegisterService {
         return scheduleDTO;
     }
 
-    public void register(TeachingRegisterRequest request) {
-        var teacher = teacherRepo.findByTeacherCode(request.teacherCode())
-                .orElseThrow();
-        var subject = subjectRepo.getReferenceById(request.subjectCode());
-        var room = classroomRepo.getReferenceById(request.roomId());
+    public boolean register(TeachingRegisterRequest request)  {
+        boolean x = true;
+            var teacher = teacherRepo.findByTeacherCode(request.teacherCode())
+                    .orElseThrow(() -> new TeacherNotFoundException());
+            var subject = subjectRepo.findById(request.subjectCode()).orElseThrow(() -> new SubjectNotFoundException());
+            var room = classroomRepo.findById(request.roomId()).orElseThrow(() -> new ClassroomNotFoundException());
 
-        int week = request.week(), weekDay = request.weekDay(), shift = request.shift();
-        if (week < 1 || week > 30) {
-            throw new WeekInputException();
-        }
-        if (weekDay < 2 || weekDay > 7) {
-            throw new WeekDayInputException();
-        }
-        if (shift < 1 || shift > 6) {
-            throw new ShiftInputException();
-        }
+            int week = request.week(), weekDay = request.weekDay(), shift = request.shift();
+            if (week < 1 || week > 15) {
+                x = false;
+                throw new WeekInputException();
+            }
+            if (weekDay < 2 || weekDay > 7) {
+                x = false;
+                throw new WeekDayInputException();
+            }
+            if (shift < 1 || shift > 6) {
+                x = false;
+                throw new ShiftInputException();
+            }
 
-        var wDay = switch (weekDay) {
-            case 2 -> WeekDay.MONDAY;
-            case 3 -> WeekDay.TUESDAY;
-            case 4 -> WeekDay.WEDNESDAY;
-            case 5 -> WeekDay.THURSDAY;
-            case 6 -> WeekDay.FRIDAY;
-            case 7 -> WeekDay.SATURDAY;
-            default -> WeekDay.UNDEFINED;
-        };
+            var wDay = switch (weekDay) {
+                case 2 -> WeekDay.MONDAY;
+                case 3 -> WeekDay.TUESDAY;
+                case 4 -> WeekDay.WEDNESDAY;
+                case 5 -> WeekDay.THURSDAY;
+                case 6 -> WeekDay.FRIDAY;
+                case 7 -> WeekDay.SATURDAY;
+                default -> WeekDay.UNDEFINED;
+            };
 
-        var schedule = scheduleRepo.findByShiftAndWeekDayAndWeek(shift, wDay, week);
-        if (schedule.isPresent()) throw new DuplicateRegisterException();
+            var schedule = scheduleRepo.findByShiftAndWeekDayAndWeek(shift, wDay, week);
+            if (schedule.isPresent()) {
+                x = false;
+                throw new DuplicateRegisterException();
+            }
 
-        var s = new Schedule(request.week(), request.weekDay(), request.shift());
-        s.setRoom(room);
+            var s = new Schedule(request.week(), request.weekDay(), request.shift());
+            s.setRoom(room);
 
-        var course = Course.builder()
-                .name("DEMO")
-                .subject(subject)
-                .build();
+            var course = Course.builder()
+                    .name("DEMO")
+                    .subject(subject)
+                    .build();
 
-        course.addSchedule(s);
+            course.addSchedule(s);
 
-        teacher.addCourse(course);
-        teacherRepo.save(teacher);
+            teacher.addCourse(course);
+            teacherRepo.save(teacher);
+            return x;
     }
 }

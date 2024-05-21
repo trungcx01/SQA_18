@@ -1,15 +1,13 @@
 package com.example.registrationms.controller;
 
 import com.example.registrationms.dto.LoginRequest;
-import com.example.registrationms.model.Teacher;
 import com.example.registrationms.service.AuthenticationService;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.security.core.AuthenticationException;
 
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class AuthenticationControllerTest {
@@ -17,24 +15,30 @@ class AuthenticationControllerTest {
     private AuthenticationService authenticationService;
 
     @Test
-    void login() {
-        var result = authenticationService.authenticate(new LoginRequest("MGV001", "123456"));
-        assertThat(result.getUsername()).isEqualTo("MGV001");
-        assertThat(result.getName()).isEqualTo("Nguyen Van A");
+    void loginTrue() {
+        var result = authenticationService.authenticate(new LoginRequest("MGV001", "12345"));
+        assertEquals(result.getUsername(), "MGV001");
+        assertEquals(result.getName(), "Nguyen Van A");
+    }
+
+    @Test()
+    void loginNullUsername() {
+        Throwable exception = assertThrows(AuthenticationException.class,
+                () -> authenticationService.authenticate(new LoginRequest(null, "123456")));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 
     @Test
-    public void testAuthenticateSuccess() {
-        assertThat(true).isEqualTo(true);
+    void loginNullPassword() {
+        Throwable exception = assertThrows(AuthenticationException.class,
+                () -> authenticationService.authenticate(new LoginRequest("MGV001", null)));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 
     @Test
-    public void testAuthenticateFail() {
-        assertThat(true).isEqualTo(true);
-    }
-
-    @Test
-    public void testAuthenticateFailInvalidTeacherCode() {
-        assertThat(true).isEqualTo(true);
+    void loginWrongPassword() {
+        Throwable exception = assertThrows(AuthenticationException.class,
+                () -> authenticationService.authenticate(new LoginRequest("MGV001", "123455")));
+        assertEquals("Bad credentials", exception.getMessage());
     }
 }

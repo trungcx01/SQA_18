@@ -13,7 +13,8 @@ import java.util.List;
 @Builder
 @Getter @Setter
 public class Course {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String name;
     private int capacity = 60;

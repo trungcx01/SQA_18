@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
+@Getter @Setter
 public class Subject {
     @Id
     private String code;
@@ -20,4 +20,9 @@ public class Subject {
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Course> courses = new ArrayList<>();
+
+    public Subject(String code, String name) {
+        this.code = code;
+        this.name = name;
+    }
 }

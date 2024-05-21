@@ -15,7 +15,8 @@ import java.util.List;
 @Data
 @Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public abstract class User implements UserDetails {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Integer id;
     private String code;
     @Column(unique = true)

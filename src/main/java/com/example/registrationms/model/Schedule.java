@@ -9,7 +9,8 @@ import lombok.*;
 @Getter @Setter
 @Builder
 public class Schedule {
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private WeekDay weekDay;
     private int shift;
