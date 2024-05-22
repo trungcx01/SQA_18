@@ -11,6 +11,7 @@ import com.example.registrationms.model.WeekDay;
 import com.example.registrationms.respository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,13 +50,16 @@ public class TeachingRegisterService {
     }
 
     public SubjectDTO getSubject(String subjectCode) {
-        var subject = subjectRepo.getReferenceById(subjectCode);
+        var subject = subjectRepo.findById(subjectCode).orElse(null);
+        if (subject==null) return null;
         return new SubjectDTO(subject.getCode(), subject.getName());
     }
 
-    public ScheduleDTO getSchedule(int scheduleId) {
-        var schedule = scheduleRepo.getReferenceById(scheduleId);
+    public ScheduleDTO getSchedule(Integer scheduleId) {
+        var schedule = scheduleRepo.findById(scheduleId).orElse(null);
+        if (schedule==null) return null;
         var scheduleDTO = new ScheduleDTO();
+        scheduleDTO.setId(schedule.getId());
         scheduleDTO.setRoom(schedule.getRoom());
         scheduleDTO.setWeek(schedule.getWeek());
         scheduleDTO.setShift(schedule.getShift());
@@ -69,11 +73,12 @@ public class TeachingRegisterService {
             case SATURDAY -> 7;
             case UNDEFINED -> 0;
         };
-
+//
         scheduleDTO.setWeekDay(weekDay);
         return scheduleDTO;
     }
 
+    @Transactional
     public boolean register(TeachingRegisterRequest request) {
         var teacher = teacherRepo.findByTeacherCode(request.teacherCode())
                 .orElseThrow(TeacherNotFoundException::new);

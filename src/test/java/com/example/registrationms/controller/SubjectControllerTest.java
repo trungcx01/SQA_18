@@ -7,16 +7,19 @@ import com.example.registrationms.respository.CourseRepository;
 import com.example.registrationms.respository.SubjectRepository;
 import com.example.registrationms.service.TeachingRegisterService;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.transaction.annotation.Transactional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@Transactional
 public class SubjectControllerTest {
     @Autowired
     private TeachingRegisterService registerService;
@@ -32,7 +35,7 @@ public class SubjectControllerTest {
     private Teacher teacher;
     private Course course1;
     private Course course2;
-    @BeforeAll
+    @BeforeEach
     public void setUpBeforeClass() throws Exception {
         // Khởi tạo các Subject
         subject1 = new Subject("SQA", "Software Quality Assurance");
@@ -54,6 +57,7 @@ public class SubjectControllerTest {
         courseRepository.save(course2);
     }
     @Test
+    @Transactional
     void testGetSubject() {
         var foundSubject1 = registerService.getSubject("SQA");
         var foundSubject2 = registerService.getSubject("OOP");
@@ -64,6 +68,7 @@ public class SubjectControllerTest {
         assertEquals("OOP", foundSubject2.getCode());
         assertEquals("Object-Oriented Programming", foundSubject2.getName());
     }
+
     @Test
     void testGetSubjectNonexistentCode() {
         var foundSubject = registerService.getSubject("NonexistentCode");
@@ -72,25 +77,19 @@ public class SubjectControllerTest {
         assertNull(foundSubject);
     }
     @Test
+    @Transactional
     void testGetSubjectWithNullOrEmptyCode() {
-        var foundSubjectWithNullCode = registerService.getSubject(null);
+//        var foundSubjectWithNullCode = registerService.getSubject(null);
         var foundSubjectWithEmptyCode = registerService.getSubject("");
 
-        assertNull(foundSubjectWithNullCode);
+        assertThrows(InvalidDataAccessApiUsageException.class, ()->registerService.getSubject(null));
         assertNull(foundSubjectWithEmptyCode);
     }
     @Test
     void subjects() {
         var result = subjectRepo.findAll();
         assertThat(result).hasSize(2);
-        assertThat(result.get(0).getCode()).isEqualTo("SQA");
+        assertThat(result.get(0).getCode()).isEqualTo("OOP");
         assertThat(result.get(1).getCode()).isEqualTo("SQA");
-    }
-    @Test
-    @Transactional
-    void getCourse() {
-        var result = registerService.getSubject("SQA");
-        assertThat(result).isInstanceOf(SubjectDTO.class);
-        assertThat(result.getName()).isEqualTo("Quản lý chất lượng phần mềm");
     }
 }

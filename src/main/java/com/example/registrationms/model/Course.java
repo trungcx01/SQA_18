@@ -1,6 +1,7 @@
 package com.example.registrationms.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,7 +20,7 @@ public class Course {
     private String name;
     private int capacity = 60;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "course")
-    @JsonIgnore
+    @JsonIgnoreProperties("course")
     private List<Schedule> schedules = new ArrayList<>();
 
     @ManyToOne

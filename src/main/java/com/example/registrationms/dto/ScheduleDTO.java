@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class ScheduleDTO {
+    private int id;
     private int weekDay;
     private int shift;
     private int week;
